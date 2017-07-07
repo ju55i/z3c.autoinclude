@@ -24,13 +24,16 @@ class DependencyFinder(DistributionManager):
             for dotted_name in dist_manager.dottedNames():
                 try:
                     module = resolve(dotted_name)
-                except ImportError, exc:
+                except ImportError as exc:
                     logging.getLogger("z3c.autoinclude").warn(
                         "resolve(%r) raised import error: %s" % (dotted_name, exc))
                     continue
                 for candidate in zcml_to_look_for:
-                    candidate_path = os.path.join(
-                        os.path.dirname(module.__file__), candidate)
+                    try:
+                        candidate_path = os.path.join(
+                            os.path.dirname(module.__file__), candidate)
+                    except AttributeError: 
+                        continue
                     if os.path.isfile(candidate_path):
                         result[candidate].append(dotted_name)
         return result
